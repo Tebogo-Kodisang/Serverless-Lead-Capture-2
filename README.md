@@ -42,7 +42,7 @@ These pillars guided architecture choices such as using serverless services, ena
 ## 4. Architecture Overview
 
 ### 4.1 Architecture Diagram
-![Architecture Diagram](Serverless Lead Capture Diagram.png) 
+![Architecture Diagram](Serverless_Lead_Capture_Diagram.png) 
 
 
 ### 4.2 How It Works (Summary)
