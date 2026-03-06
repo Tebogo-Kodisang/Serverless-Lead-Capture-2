@@ -1,41 +1,44 @@
 # Serverless Lead Capture on AWS: The Epic Books
+I built a system on AWS that allows businesses to collect customer names and email addresses through a website. The information is stored securely for future marketing campaigns, and customers receive downloadable content via email as a reward.
+
 
 ## 1. Project Overview
-Epic Books is a mock company that needed a simple way to collect customer names and email addresses through their website. Traditional setups rely on fixed servers that are expensive to maintain, slow for global users, and prone to crashes under traffic spikes. Manual patching also introduces security risks.
+Epic Books is a mock company that needs a simple way to collect customer names and email addresses through their website. Older setups often relied on dedicated servers that require ongoing maintenance, manual updates, and management of insfratructure. These systems can also struggle when there is a lot of traffic and are also very expensive to operate even when usage is low. The business needed a solution that could reliably keep customer data, remain fast for global users, and securely store the data without requiring dedicated infrastructure.
 
-To solve this, I built a **serverless solution on AWS**, which scales automatically with visitors, reduces infrastructure costs, and improves security using managed AWS services.
-
+To solve this, I built a **serverless solution on AWS**. This eliminates the need to manage servers, which reduces infrastructure costs and also eliminates the need to hire staff for maintenance (patching). The solution automatically scales as website traffic increases and provides stronger security because it uses AWS managed services instead of vulnerable self-hosted systems.
 ---
 
 ## 2. Business Requirements
-Epic Books required:
+Epic Books provided the following requirements:
 
-- Static website built with HTML, CSS, and JavaScript  
-- Customers can download an ebook  
-- Customers receive an email notification after download  
-- Customer details (name & email) stored in a database  
-- Fast and responsive website for global users  
-- Support 500 active users with 10–15 daily downloads  
+- They need a static website built with HTML, CSS, and JavaScript.  
+- Customers must be able to download an ebook. 
+- Customers must receive an email notification after downloading the ebook. 
+- Customer details (name and email) must be stored in a database after download.
+- The website must serve global users and remain fast and responsive. 
+- The website has 500 active users with 10–15 ebook downloads per day.  
 - All traffic must use HTTPS  
-- Domain: theepicbooks.com  
+- The domain name must be theepicbooks.com.
 
 ---
 
 ## 3. Well-Architected Framework Considerations
-The solution was designed using the **AWS Well-Architected Framework**, focusing on pillars most relevant to the business:
+I designed the solution using the AWS Well-Architected Framework in mind. The following pillars are the ones that  I felt are most relevant to the business’s needs:
 
-- **Security:** HTTPS, secure storage of customer data  
-- **Performance Efficiency:** Global website performance  
-- **Operational Excellence:** Email notifications and monitoring  
-- **Cost Optimization:** Serverless components to reduce idle costs  
-- **Reliability:** Database durability and automated scaling  
+- **Security:** HTTPS, secure storage of customer data
+- **Performance Efficiency:** The website should be fast for global users
+- **Operational Excellence:** Email notifications, monitoring and logging
+- **Cost Optimization:** Stick to serverless services as much as possible to reduce idle costs (Cloud services that only cost money when they’re actually being used)
+- **Reliability:** The database should not lose data and should also scale automatically
 
-**Prioritized pillars for design decisions:**  
-1. Security  
-2. Cost Optimization  
-3. Performance Efficiency  
+**Prioritized pillars for design decisions:**
 
-These pillars guided architecture choices such as using serverless services, enabling HTTPS, and automating scaling.
+1. Security
+2. Cost Optimization
+3. Performance Efficiency
+
+These pillars guided all my choices. It’s also worth mentioning that these priorities might be switched and modified based on business requirements.
+
 
 ---
 
@@ -50,8 +53,8 @@ These pillars guided architecture choices such as using serverless services, ena
 - Distributed globally via **Amazon CloudFront**  
 - HTTPS provided by **AWS Certificate Manager**  
 - Form submissions sent to **Amazon API Gateway**  
-- Processed by **AWS Lambda**  
-- Leads stored in **Amazon DynamoDB**  
+- All processing done by **AWS Lambda**  
+- Customer data stored in **Amazon DynamoDB**  
 - Confirmation emails sent via **Amazon SES**  
 - **Amazon CloudWatch** monitors and logs all backend activity  
 - **IAM Roles & Policies** enforce least-privilege access  
@@ -64,37 +67,40 @@ These pillars guided architecture choices such as using serverless services, ena
 **Solution:** Amazon S3 + Amazon CloudFront + AWS Certificate Manager  
 
 **Why:**  
-- Amazon S3 provides scalable, highly available static hosting  
+- Amazon S3 can host static websites and has high availability and is scalable
 - Amazon CloudFront improves speed and enables HTTPS  
 - AWS Certificate Manager ensures secure connections  
 
-**Implementation Steps:**  
-1. Prepare website files (HTML, CSS, JS, images)  
-2. Create S3 bucket and enable static website hosting  
-3. Configure bucket policies for public access with GetObject permission  
-4. Upload all website files and error document  
-5. Create Amazon CloudFront distribution with S3 bucket as origin  
-6. Request TLS certificate in AWS Certificate Manager  
-7. Route domain traffic using **Amazon Route 53**  
+**Instructions:**  
+1. Prepare website files and code (HTML, FONTS, CSS, JavaScript, images)
+2. Create an S3 bucket for static website hosting.
+3. Enable the static website feature on S3 bucket.
+4. Configure public access and added a bucket policy that grants users "GetObject" permissions.
+5. Upload an error document for when users are unable to access the site.
+6. Upload all website files to the S3 bucket.
+7. Create a CloudFront distribution for the website using the S3 bucket as the origin type.
+8. Request a public TLS certificate in ACM for theepicbooks.com.
+9. Route traffic to the CloudFront distribution on Route 53.
+
 
 ---
 
 ### 5.2 Contact Form / Lead Capture
-**Solution:** Amazon API Gateway + AWS Lambda + Amazon SES + IAM Roles & Policies + Amazon CloudWatch  
+**Solution:** For this section I used Amazon API Gateway, AWS Lambda, Amazon SES, IAM Roles & Policies and Amazon CloudWatch. 
 
 **Why:**  
-- Amazon API Gateway provides a secure endpoint for the website  
-- AWS Lambda automates submission processing and scales with demand  
-- Amazon SES sends reliable confirmation emails  
+- API Gateway receives the form submission from the website and passes the data to the backend for processing
+- AWS Lambda receives the form data from API Gateway, processes it, saves the lead information to DynamoDB, and sends a notification email through Amazon SES.
+- Amazon SES sends reliable emails  
 - IAM Roles & Policies enforce least-privilege permissions for Lambda  
 - Amazon CloudWatch monitors logs and performance  
 
-**Implementation Steps:**  
-1. Configure SES sender and receiver identities  
-2. Create IAM role with permissions for Lambda to send emails and write CloudWatch logs  
-3. Create Lambda function to process form submissions and send emails via SES  
-4. Test Lambda function  
-5. Create REST API in Amazon API Gateway for form submissions  
+**Instructions:**  
+1. Setup SES sender and receiver identities  
+2. Create an IAM role with permissions for Lambda to send emails and write CloudWatch logs  
+3. Create a Lambda function to process form submissions and send emails via SES  
+4. Test the Lambda function  
+5. Create a REST API in Amazon API Gateway for form submissions  
 6. Enable CORS and deploy the API  
 7. Test API with CURL (simulate browser requests)  
 8. Update website form to point to API endpoint  
@@ -102,7 +108,7 @@ These pillars guided architecture choices such as using serverless services, ena
 
 ---
 
-### 5.3 Data Storage (Leads)
+### 5.3 Data Storage (Customer information)
 **Solution:** Amazon DynamoDB  
 
 **Why:**  
@@ -110,7 +116,7 @@ These pillars guided architecture choices such as using serverless services, ena
 - Integrates easily with AWS Lambda  
 - Fully managed, serverless  
 
-**Implementation Steps:**  
+**Instructions:**  
 1. Create DynamoDB table  
 2. Grant Lambda permissions to write to the table via IAM role  
 3. Update Lambda function to store submissions  
